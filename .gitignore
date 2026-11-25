@@ -1,10 +1,13 @@
 # CakePHP specific files #
 ##########################
 /config/app_local.php
+/config/setup-token.txt
+/config/.setup*
 /config/.env
 /logs/*
 /tmp/*
 /vendor/*
+/resources/wiki-media/
 
 # OS generated files #
 ######################

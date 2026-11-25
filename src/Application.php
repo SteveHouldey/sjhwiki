@@ -16,7 +16,14 @@ declare(strict_types=1);
  */
 namespace App;
 
+use App\Authenticator\RevocableSessionAuthenticator;
 use App\Middleware\HostHeaderMiddleware;
+use App\Middleware\SecurityHeadersMiddleware;
+use App\Service\WebInstaller;
+use Authentication\AuthenticationService;
+use Authentication\AuthenticationServiceInterface;
+use Authentication\AuthenticationServiceProviderInterface;
+use Authentication\Middleware\AuthenticationMiddleware;
 use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Datasource\FactoryLocator;
@@ -29,6 +36,7 @@ use Cake\Http\MiddlewareQueue;
 use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Application setup class.
@@ -38,7 +46,7 @@ use Cake\Routing\Middleware\RoutingMiddleware;
  *
  * @extends \Cake\Http\BaseApplication<\App\Application>
  */
-class Application extends BaseApplication
+class Application extends BaseApplication implements AuthenticationServiceProviderInterface
 {
     /**
      * Load all the application configuration and bootstrap logic.
@@ -66,6 +74,7 @@ class Application extends BaseApplication
     public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
         $middlewareQueue
+            ->add(new SecurityHeadersMiddleware())
             // Catch any exceptions in the lower layers,
             // and make an error page/response
             ->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
@@ -94,10 +103,37 @@ class Application extends BaseApplication
             // Cross Site Request Forgery (CSRF) Protection Middleware
             // https://book.cakephp.org/5/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
             ->add(new CsrfProtectionMiddleware([
+                'cookieName' => (new WebInstaller(CONFIG, WWW_ROOT))->enabled()
+                    ? 'wikiSetupCsrf'
+                    : Configure::read('App.csrfCookieName', 'csrfToken'),
                 'httponly' => true,
-            ]));
+                'secure' => (bool)(Configure::read('Session.ini')['session.cookie_secure'] ?? false),
+            ]))
+            ->add(new AuthenticationMiddleware($this));
 
         return $middlewareQueue;
+    }
+
+    /**
+     * Configure session authentication with a fresh user lookup on every request.
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request Request.
+     * @return \Authentication\AuthenticationServiceInterface
+     */
+    public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
+    {
+        $service = new AuthenticationService();
+        $service->loadAuthenticator(RevocableSessionAuthenticator::class, [
+            'identifier' => [
+                'Authentication.Token' => [
+                    'dataField' => 'key',
+                    'tokenField' => 'id',
+                    'resolver' => ['className' => 'Authentication.Orm', 'finder' => 'active'],
+                ],
+            ],
+        ]);
+
+        return $service;
     }
 
     /**

@@ -18,22 +18,24 @@
 <html>
 <head>
     <?= $this->Html->charset() ?>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         <?= $this->fetch('title') ?>
     </title>
     <?= $this->Html->meta('icon') ?>
 
-    <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'cake']) ?>
+    <?= $this->Html->css(['bootstrap.min', 'wiki']) ?>
 
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
 </head>
 <body>
-    <div class="error-container">
+    <div class="container py-5 error-content">
         <?= $this->Flash->render() ?>
         <?= $this->fetch('content') ?>
         <?= $this->Html->link(__('Back'), 'javascript:history.back()') ?>
     </div>
+    <?= $this->element('site_footer') ?>
 </body>
 </html>

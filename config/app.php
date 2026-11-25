@@ -252,7 +252,7 @@ return [
     'Email' => [
         'default' => [
             'transport' => 'default',
-            'from' => 'you@localhost',
+            'from' => env('WIKI_MAIL_FROM', 'wiki@localhost'),
             /*
              * Will by default be set to config value of App.encoding, if that exists otherwise to UTF-8.
              */
@@ -418,6 +418,12 @@ return [
      */
     'Session' => [
         'defaults' => 'php',
+        'ini' => [
+            'session.cookie_httponly' => 1,
+            'session.cookie_samesite' => 'Lax',
+            'session.cookie_secure' => filter_var(env('SESSION_COOKIE_SECURE', false), FILTER_VALIDATE_BOOLEAN),
+            'session.use_strict_mode' => 1,
+        ],
     ],
 
     /**

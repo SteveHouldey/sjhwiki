@@ -1,96 +1,61 @@
 <?php
-/**
- * Routes configuration.
- *
- * In this file, you set up routes to your controllers and their actions.
- * Routes are very important mechanism that allows you to freely connect
- * different URLs to chosen controllers and their actions (functions).
- *
- * It's loaded within the context of `Application::routes()` method which
- * receives a `RouteBuilder` instance `$routes` as method argument.
- *
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- *
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
- * @license       https://opensource.org/licenses/mit-license.php MIT License
- */
+declare(strict_types=1);
 
 use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\RouteBuilder;
 
-/*
- * This file is loaded in the context of the `Application` class.
- * So you can use `$this` to reference the application class instance
- * if required.
- */
 return function (RouteBuilder $routes): void {
-    /*
-     * The default class to use for all routes
-     *
-     * The following route classes are supplied with CakePHP and are appropriate
-     * to set as the default:
-     *
-     * - Route
-     * - InflectedRoute
-     * - DashedRoute
-     *
-     * If no call is made to `Router::defaultRouteClass()`, the class used is
-     * `Route` (`Cake\Routing\Route\Route`)
-     *
-     * Note that `Route` does not do any inflections on URLs which will result in
-     * inconsistently cased URLs when used with `{plugin}`, `{controller}` and
-     * `{action}` markers.
-     */
     $routes->setRouteClass(DashedRoute::class);
-
     $routes->scope('/', function (RouteBuilder $builder): void {
-        /*
-         * Here, we are connecting '/' (base path) to a controller called 'Pages',
-         * its action called 'display', and we pass a param to select the view file
-         * to use (in this case, templates/Pages/home.php)...
-         */
-        $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
-
-        /*
-         * ...and connect the rest of 'Pages' controller's URLs.
-         */
-        $builder->connect('/pages/*', 'Pages::display');
-
-        /*
-         * Connect catchall routes for all controllers.
-         *
-         * The `fallbacks` method is a shortcut for
-         *
-         * ```
-         * $builder->connect('/{controller}', ['action' => 'index']);
-         * $builder->connect('/{controller}/{action}/*', []);
-         * ```
-         *
-         * It is NOT recommended to use fallback routes after your initial prototyping phase!
-         * See https://book.cakephp.org/5/en/development/routing.html#fallbacks-method for more information
-         */
-        $builder->fallbacks();
+        $builder->connect('/', ['controller' => 'Wikis', 'action' => 'index']);
+        $builder->connect('/about', ['controller' => 'Wikis', 'action' => 'about']);
+        $builder->connect('/setup', ['controller' => 'Accounts', 'action' => 'setup']);
+        $builder->connect('/login', ['controller' => 'Accounts', 'action' => 'login']);
+        $builder->connect('/logout', ['controller' => 'Accounts', 'action' => 'logout']);
+        $builder->connect('/register', ['controller' => 'AccountEmails', 'action' => 'register']);
+        $builder->connect('/resend-verification', ['controller' => 'AccountEmails', 'action' => 'resend']);
+        $builder->connect('/forgot-password', ['controller' => 'AccountEmails', 'action' => 'forgot']);
+        $builder->connect('/verify-email/{token}', ['controller' => 'AccountEmails', 'action' => 'verify'])
+            ->setPatterns(['token' => '[a-f0-9]{64}'])->setPass(['token']);
+        $builder->connect('/reset-password/{token}', ['controller' => 'AccountEmails', 'action' => 'reset'])
+            ->setPatterns(['token' => '[a-f0-9]{64}'])->setPass(['token']);
+        $builder->connect('/admin/users', ['controller' => 'Users', 'action' => 'index']);
+        $builder->connect('/admin/users/add', ['controller' => 'Users', 'action' => 'add']);
+        $builder->connect('/admin/users/{id}', ['controller' => 'Users', 'action' => 'edit'])
+            ->setPatterns(['id' => '\d+'])->setPass(['id']);
+        $builder->connect('/admin/settings', ['controller' => 'AdminSettings', 'action' => 'index']);
+        $builder->connect('/wikis/add', ['controller' => 'Wikis', 'action' => 'add']);
+        $builder->connect('/wikis/{wikiId}', ['controller' => 'Wikis', 'action' => 'view'])
+            ->setPatterns(['wikiId' => '\d+'])->setPass(['wikiId']);
+        $builder->connect('/wikis/{wikiId}/settings', ['controller' => 'Wikis', 'action' => 'settings'])
+            ->setPatterns(['wikiId' => '\d+'])->setPass(['wikiId']);
+        $builder->connect('/wikis/{wikiId}/roles', ['controller' => 'WikiRoles', 'action' => 'index'])
+            ->setPatterns(['wikiId' => '\d+'])->setPass(['wikiId']);
+        $builder->connect('/wikis/{wikiId}/roles/add', ['controller' => 'WikiRoles', 'action' => 'add'])
+            ->setPatterns(['wikiId' => '\d+'])->setPass(['wikiId']);
+        $builder->connect('/wikis/{wikiId}/roles/{roleId}', ['controller' => 'WikiRoles', 'action' => 'edit'])
+            ->setPatterns(['wikiId' => '\d+', 'roleId' => '\d+'])->setPass(['wikiId', 'roleId']);
+        $builder->connect('/wikis/{wikiId}/roles/{roleId}/delete', [
+            'controller' => 'WikiRoles', 'action' => 'delete',
+        ])->setPatterns(['wikiId' => '\d+', 'roleId' => '\d+'])->setPass(['wikiId', 'roleId']);
+        $builder->connect('/wikis/{wikiId}/pages/add', ['controller' => 'WikiPages', 'action' => 'add'])
+            ->setPatterns(['wikiId' => '\d+'])->setPass(['wikiId']);
+        $builder->connect('/wikis/{wikiId}/media', ['controller' => 'WikiMedia', 'action' => 'upload'])
+            ->setPatterns(['wikiId' => '\d+'])->setPass(['wikiId']);
+        $builder->connect('/wikis/{wikiId}/media/{mediaId}', ['controller' => 'WikiMedia', 'action' => 'view'])
+            ->setPatterns(['wikiId' => '\d+', 'mediaId' => '\d+'])->setPass(['wikiId', 'mediaId']);
+        foreach (['view', 'edit', 'delete', 'history'] as $action) {
+            $suffix = $action === 'view' ? '' : '/' . $action;
+            $builder->connect('/wikis/{wikiId}/pages/{pageId}' . $suffix, [
+                'controller' => 'WikiPages', 'action' => $action,
+            ])->setPatterns(['wikiId' => '\d+', 'pageId' => '\d+'])->setPass(['wikiId', 'pageId']);
+        }
+        $builder->connect('/wikis/{wikiId}/pages/{pageId}/history/{revisionId}/restore', [
+            'controller' => 'WikiPages', 'action' => 'restore',
+        ])->setPatterns(['wikiId' => '\d+', 'pageId' => '\d+', 'revisionId' => '\d+'])
+            ->setPass(['wikiId', 'pageId', 'revisionId']);
+        $builder->connect('/search', ['controller' => 'Wikis', 'action' => 'search']);
+        $builder->connect('/admin/sync', ['controller' => 'GitSync', 'action' => 'index']);
+        $builder->connect('/admin/sync/run', ['controller' => 'GitSync', 'action' => 'run']);
     });
-
-    /*
-     * If you need a different set of middleware or none at all,
-     * open new scope and define routes there.
-     *
-     * ```
-     * $routes->scope('/api', function (RouteBuilder $builder): void {
-     *     // No $builder->applyMiddleware() here.
-     *
-     *     // Parse specified extensions from URLs
-     *     // $builder->setExtensions(['json', 'xml']);
-     *
-     *     // Connect API actions here.
-     * });
-     * ```
-     */
 };

@@ -35,6 +35,7 @@ require CORE_PATH . 'config' . DS . 'bootstrap.php';
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
+use Cake\Database\Driver\Sqlite;
 use Cake\Datasource\ConnectionManager;
 use Cake\Error\ErrorTrap;
 use Cake\Error\ExceptionTrap;
@@ -94,6 +95,13 @@ try {
  */
 if (file_exists(CONFIG . 'app_local.php')) {
     Configure::load('app_local', 'default');
+} elseif (is_file(CONFIG . 'setup-token.txt') && !Configure::read('Security.salt')) {
+    $setupToken = file_get_contents(CONFIG . 'setup-token.txt');
+    if (!is_string($setupToken) || !preg_match('/\A[a-f0-9]{64}\z/D', trim($setupToken))) {
+        exit("Invalid setup token file.\n");
+    }
+    Configure::write('Security.salt', hash('sha256', trim($setupToken) . 'wiki-setup'));
+    unset($setupToken);
 }
 
 /*
@@ -185,6 +193,14 @@ unset($fullBaseUrl);
  */
 Cache::setConfig(Configure::consume('Cache'));
 ConnectionManager::setConfig(Configure::consume('Datasources'));
+foreach (ConnectionManager::configured() as $connectionName) {
+    $connectionConfig = ConnectionManager::getConfig($connectionName);
+    if (($connectionConfig['driver'] ?? null) === Sqlite::class) {
+        $connectionConfig['init'] = array_merge((array)($connectionConfig['init'] ?? []), ['PRAGMA foreign_keys = ON']);
+        ConnectionManager::drop($connectionName);
+        ConnectionManager::setConfig($connectionName, $connectionConfig);
+    }
+}
 TransportFactory::setConfig(Configure::consume('EmailTransport'));
 Mailer::setConfig(Configure::consume('Email'));
 Log::setConfig(Configure::consume('Log'));
