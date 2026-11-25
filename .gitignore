@@ -53,3 +53,7 @@ nbproject/*
 # yarn
 yarn-debug.log
 yarn-error.log
+
+# Generated release packages
+/sjhwiki-v*.zip
+/sjhwiki-v*.zip.sha256
