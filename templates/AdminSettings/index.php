@@ -114,6 +114,11 @@
                 'type' => 'password',
                 'autocomplete' => 'new-password',
             ]) ?>
+            <hr>
+            <h3>Send test email</h3>
+            <?= $this->Form->control('test_email_address', ['label' => 'Recipient', 'type' => 'email', 'value' => $settings['test_email_address'] ?? '', 'required' => false]) ?>
+            <button type="button" class="button button-outline" id="send-test-email">Send test email</button>
+            <p class="help" id="test-email-status" role="status" aria-live="polite"></p>
         </section>
     </div>
 </div>
@@ -123,18 +128,9 @@
 </div>
 <?= $this->Form->end() ?>
 
-<section class="panel narrow admin-test-email" data-admin-test-email hidden>
-    <h2>Send test email</h2>
-    <?= $this->Form->create(null, ['url' => '/admin/settings/test-email']) ?>
-    <?= $this->Form->control('test_email_address', ['label' => 'Recipient', 'type' => 'email', 'value' => $settings['test_email_address'] ?? '', 'required' => true]) ?>
-    <?= $this->Form->button('Send test email', ['class' => 'button']) ?>
-    <?= $this->Form->end() ?>
-</section>
-
 <script>
     const adminTabButtons = document.querySelectorAll('[data-admin-tab]');
     const adminTabPanes = document.querySelectorAll('[data-admin-pane]');
-    const testEmailPanel = document.querySelector('[data-admin-test-email]');
     adminTabButtons.forEach((button) => {
         button.addEventListener('click', () => {
             const tab = button.dataset.adminTab;
@@ -144,8 +140,39 @@
                 pane.hidden = !active;
                 pane.classList.toggle('active', active);
             });
-            if (testEmailPanel) testEmailPanel.hidden = tab !== 'email';
         });
+    });
+
+    const testEmailButton = document.querySelector('#send-test-email');
+    const testEmailAddress = document.querySelector('[name="test_email_address"]');
+    const testEmailStatus = document.querySelector('#test-email-status');
+    testEmailButton?.addEventListener('click', async () => {
+        const address = testEmailAddress?.value.trim();
+        if (!address) {
+            testEmailStatus.textContent = 'Enter a test email recipient.';
+            return;
+        }
+        testEmailButton.disabled = true;
+        testEmailStatus.textContent = 'Sending test email...';
+        const formData = new FormData();
+        formData.append('test_email_address', address);
+        try {
+            const response = await fetch('/admin/settings/test-email', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            const result = await response.json().catch(() => null);
+            testEmailStatus.textContent = result?.message
+                || (response.ok ? 'Test email sent.' : 'Test email could not be sent.');
+        } catch {
+            testEmailStatus.textContent = 'Test email could not be sent.';
+        } finally {
+            testEmailButton.disabled = false;
+        }
     });
 </script>
 

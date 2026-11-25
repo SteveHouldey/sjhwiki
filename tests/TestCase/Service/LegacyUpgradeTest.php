@@ -9,6 +9,25 @@ use Symfony\Component\Process\Process;
 
 class LegacyUpgradeTest extends TestCase
 {
+    public function testMigrationCommandRunsWithoutLock(): void
+    {
+        $path = tempnam(TMP, 'wiki-migrations-');
+        $this->assertNotFalse($path);
+        $environment = ['DATABASE_URL' => 'sqlite://localhost/' . $path];
+        try {
+            $process = new Process(
+                [PHP_BINARY, ROOT . '/bin/cake.php', 'migrations', 'migrate', '--no-lock', '--quiet'],
+                ROOT,
+                $environment,
+            );
+            $process->mustRun();
+            $db = new PDO('sqlite:' . $path);
+            $this->assertGreaterThan(0, (int)$db->query('SELECT COUNT(*) FROM sqlite_master')->fetchColumn());
+        } finally {
+            unlink($path);
+        }
+    }
+
     public function testUpgradePreservesMarkdownHistoryAndPendingQueue(): void
     {
         $path = tempnam(TMP, 'wiki-upgrade-');

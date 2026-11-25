@@ -3,8 +3,15 @@
 ## 1.0.1.2
 
 - Added AJAX update progress modal with live status and percentage.
-- Added dismissible update status notifications.
+- Added full-width update status notifications.
+- Removed dismiss controls from update status notifications.
 - Improved update available, up-to-date, and update failure messaging.
+- Kept test-email controls inside the Email settings tab.
+- Fixed SMTP host, sender, username, port, and encryption settings persistence.
+- Preserved an existing SMTP password when the password field is left blank.
+- Automated database migration execution during updates.
+- Backed up and restored `config/app_local.php` during updates.
+- Added SQLite database backup and restore support for failed migrations.
 
 ## 1.0.1.1
 

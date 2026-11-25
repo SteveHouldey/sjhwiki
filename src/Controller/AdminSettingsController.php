@@ -146,6 +146,15 @@ class AdminSettingsController extends AppController
         if ($address === '' || filter_var($address, FILTER_VALIDATE_EMAIL) === false) {
             $this->Flash->error('Enter a valid test email address.');
 
+            if ($this->isAjaxTestEmailRequest()) {
+                return $this->response
+                    ->withStatus(422)
+                    ->withType('application/json')
+                    ->withStringBody(json_encode([
+                        'success' => false,
+                        'message' => 'Enter a valid test email recipient.',
+                    ], JSON_THROW_ON_ERROR));
+            }
             return $this->redirect('/admin/settings');
         }
 
@@ -177,11 +186,36 @@ class AdminSettingsController extends AppController
             $mailer->viewBuilder()->setTemplate('account');
             $mailer->deliver();
             $this->Flash->success('Test email sent to ' . $address . '.');
+            if ($this->isAjaxTestEmailRequest()) {
+                return $this->response
+                    ->withStatus(200)
+                    ->withType('application/json')
+                    ->withStringBody(json_encode([
+                        'success' => true,
+                        'message' => 'Test email sent to ' . $address . '.',
+                    ], JSON_THROW_ON_ERROR));
+            }
         } catch (Throwable $exception) {
             $this->Flash->error('Test email could not be sent. Check SMTP settings and server logs.');
+            if ($this->isAjaxTestEmailRequest()) {
+                return $this->response
+                    ->withStatus(422)
+                    ->withType('application/json')
+                    ->withStringBody(json_encode([
+                        'success' => false,
+                        'message' => 'Test email could not be sent. Check SMTP settings and server logs.',
+                    ], JSON_THROW_ON_ERROR));
+            }
         }
 
         return $this->redirect('/admin/settings');
+    }
+
+    /** @return bool */
+    private function isAjaxTestEmailRequest(): bool
+    {
+        return $this->request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest' ||
+            str_contains($this->request->getHeaderLine('Accept'), 'application/json');
     }
 
     /** @return string */

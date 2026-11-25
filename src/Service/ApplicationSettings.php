@@ -37,6 +37,12 @@ class ApplicationSettings
         'about_message' => 'Bring documentation, ideas and practical guides together in one accessible place.',
         'about_content' => '<p>Write about this wiki, its purpose, policies and community using the Admin Center editor.</p>',
         'test_email_address' => '',
+        'mail_from' => '',
+        'smtp_host' => '',
+        'smtp_port' => '587',
+        'smtp_encryption' => 'tls',
+        'smtp_username' => '',
+        'smtp_password' => '',
     ];
 
     /** @param \Cake\Database\Connection $db */
@@ -87,6 +93,9 @@ class ApplicationSettings
                     [$key],
                 )->fetch('assoc');
                 if ($existing) {
+                    if ($secret && $normalized === '') {
+                        continue;
+                    }
                     $this->db->update('application_settings', [
                         'setting_value' => $stored,
                         'is_secret' => (int)$secret,

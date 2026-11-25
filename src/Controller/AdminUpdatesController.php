@@ -51,9 +51,10 @@ class AdminUpdatesController extends AppController
                     ->withType('application/json')
                     ->withStringBody(json_encode([
                         'success' => true,
-                        'message' => 'Update package installed. Run database migrations to finish the upgrade.',
+                        'message' => 'Update package installed and database migrations completed.',
                         'version' => (string)$release['version'],
                         'backup' => (string)$result['backup'],
+                        'app_local_preserved' => (bool)$result['app_local_restored'],
                     ], JSON_THROW_ON_ERROR));
             }
         } catch (RuntimeException $exception) {

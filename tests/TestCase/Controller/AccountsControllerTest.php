@@ -51,11 +51,11 @@ class AccountsControllerTest extends TestCase
             'registration_enabled' => '1',
             'require_verified_email' => '1',
             'mail_from' => 'wiki@example.test',
-            'smtp_host' => '',
+            'smtp_host' => 'smtp.example.test',
             'smtp_port' => '587',
             'smtp_encryption' => 'tls',
-            'smtp_username' => '',
-            'smtp_password' => '',
+            'smtp_username' => 'smtp-user',
+            'smtp_password' => 'smtp-secret',
             'landing_eyebrow' => 'YOUR KNOWLEDGE',
             'landing_title' => 'Welcome to Acme',
             'landing_message' => 'Find and share documentation.',
@@ -84,6 +84,52 @@ class AccountsControllerTest extends TestCase
             'SELECT setting_value FROM application_settings WHERE setting_key = ?',
             ['site_name'],
         )->fetchColumn(0));
+        $this->assertSame('smtp.example.test', $db->execute(
+            'SELECT setting_value FROM application_settings WHERE setting_key = ?',
+            ['smtp_host'],
+        )->fetchColumn(0));
+        $this->assertSame('smtp-user', $db->execute(
+            'SELECT setting_value FROM application_settings WHERE setting_key = ?',
+            ['smtp_username'],
+        )->fetchColumn(0));
+
+        $this->post('/admin/settings', [
+            'site_name' => 'Acme Knowledge',
+            'site_tagline' => 'Internal knowledge',
+            'footer_text' => 'Acme documentation',
+            'full_base_url' => 'https://wiki.example.test',
+            'registration_enabled' => '1',
+            'require_verified_email' => '1',
+            'mail_from' => 'wiki@example.test',
+            'smtp_host' => 'smtp.example.test',
+            'smtp_port' => '587',
+            'smtp_encryption' => 'tls',
+            'smtp_username' => 'smtp-user',
+            'smtp_password' => '',
+            'landing_eyebrow' => 'YOUR KNOWLEDGE',
+            'landing_title' => 'Welcome to Acme',
+            'landing_message' => 'Find and share documentation.',
+            'landing_primary_label' => 'Sign in',
+            'landing_primary_url' => '/login',
+            'landing_secondary_label' => 'Browse',
+            'landing_secondary_url' => '#public-wikis',
+            'feature_one_title' => 'Write naturally',
+            'feature_one_message' => 'Create rich pages.',
+            'feature_two_title' => 'Share securely',
+            'feature_two_message' => 'Control wiki access.',
+            'feature_three_title' => 'Keep history',
+            'feature_three_message' => 'Review revisions.',
+            'about_eyebrow' => 'ABOUT ACME',
+            'about_title' => 'Knowledge shared',
+            'about_message' => 'Documentation for everyone.',
+            'about_content' => '<p>Welcome to Acme documentation.</p>',
+        ]);
+        $this->assertRedirect('/admin/settings');
+        $secret = $db->execute(
+            'SELECT setting_value FROM application_settings WHERE setting_key = ?',
+            ['smtp_password'],
+        )->fetchColumn(0);
+        $this->assertNotSame('', $secret);
 
         $this->post('/admin/settings/test-email', [
             'test_email_address' => 'test@example.test',

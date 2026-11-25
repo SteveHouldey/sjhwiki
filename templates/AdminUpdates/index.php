@@ -8,13 +8,11 @@
         <div class="update-notice warning-notice" role="status">
             <span class="update-notice-icon" aria-hidden="true">!</span>
             <div><strong>Update check unavailable</strong><p><?= h($error) ?></p></div>
-            <button type="button" class="update-notice-close" aria-label="Dismiss notification">×</button>
         </div>
     <?php elseif (!$check): ?>
         <div class="update-notice warning-notice" role="status">
             <span class="update-notice-icon" aria-hidden="true">!</span>
             <div><strong>Update check unavailable</strong><p>Update information could not be retrieved.</p></div>
-            <button type="button" class="update-notice-close" aria-label="Dismiss notification">×</button>
         </div>
     <?php elseif ($check['available']): ?>
         <div class="update-notice info-notice" role="status">
@@ -23,7 +21,6 @@
                 <strong>Update available: <?= h($check['name']) ?></strong>
                 <p>Current version <strong><?= h($check['current']) ?></strong> · Available version <strong><?= h($check['version']) ?></strong></p>
             </div>
-            <button type="button" class="update-notice-close" aria-label="Dismiss update notification">×</button>
         </div>
         <div class="update-details">
             <?php if (!empty($check['published_at'])): ?>
@@ -33,7 +30,7 @@
                 <h3>Release notes</h3>
                 <p><?= h(mb_substr($check['notes'], 0, 3000)) ?></p>
             <?php endif ?>
-            <p class="message warning">Before updating, back up <code>config/app_local.php</code>, the database, uploaded media, and Git repository. The update overwrites application files but preserves local configuration and media.</p>
+            <p class="message warning">Before updating, create a full backup of the database and uploaded media. The updater backs up <code>config/app_local.php</code> and the application files, preserves uploaded media, runs migrations automatically, and rolls back application/config/database state where supported.</p>
             <?= $this->Form->create(null, ['url' => '/admin/updates/apply', 'id' => 'apply-update-form']) ?>
             <?= $this->Form->button('Download and apply update', ['id' => 'start-update-button', 'type' => 'button']) ?>
             <?= $this->Form->end() ?>
@@ -45,7 +42,6 @@
                 <strong>You are up to date</strong>
                 <p>Installed version <strong><?= h($check['current']) ?></strong></p>
             </div>
-            <button type="button" class="update-notice-close" aria-label="Dismiss notification">×</button>
         </div>
         <div class="update-details">
             <?php if (!empty($check['url'])): ?>
@@ -85,13 +81,6 @@
 </section>
 
 <script>
-    document.querySelectorAll('.update-notice-close').forEach((button) => {
-        button.addEventListener('click', () => {
-            const notice = button.closest('.update-notice');
-            if (notice) notice.remove();
-        });
-    });
-
     const updateForm = document.querySelector('#apply-update-form');
     const startUpdateButton = document.querySelector('#start-update-button');
     if (updateForm && startUpdateButton) {

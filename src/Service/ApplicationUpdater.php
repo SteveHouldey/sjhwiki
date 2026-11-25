@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use Cake\Datasource\ConnectionManager;
 use RuntimeException;
+use Symfony\Component\Process\Process;
 use ZipArchive;
 
 class ApplicationUpdater
@@ -134,6 +136,21 @@ class ApplicationUpdater
         if (!mkdir($extract, 0700, true) || !mkdir($backup, 0700, true)) {
             throw new RuntimeException('Cannot create update directories.');
         }
+        $appLocal = CONFIG . 'app_local.php';
+        $appLocalBackup = $backup . DS . 'app_local.php';
+        $appLocalHash = null;
+        if (is_file($appLocal)) {
+            if (!copy($appLocal, $appLocalBackup)) {
+                throw new RuntimeException('Cannot back up config/app_local.php before updating.');
+            }
+            $appLocalHash = hash_file('sha256', $appLocal);
+        }
+        $sqliteBackup = null;
+        try {
+            $sqliteBackup = $this->sqliteDatabaseBackup($backup);
+        } catch (\Throwable $exception) {
+            throw new RuntimeException('Cannot back up the SQLite database: ' . $exception->getMessage());
+        }
 
         $zip = new ZipArchive();
         if ($zip->open($download['archive']) !== true) {
@@ -159,24 +176,83 @@ class ApplicationUpdater
             $source = $source . DS . $children[0];
         }
 
-        $this->copyDirectory(ROOT, $backup, [
-            '.git', 'logs', 'tmp', 'vendor', 'config/app_local.php',
-            'config/setup-token.txt', 'resources/wiki-media',
-        ]);
-        $this->copyDirectory($source, ROOT, [
-            '.git', 'config/app_local.php', 'config/setup-token.txt',
-            'resources/wiki-media', 'tmp', 'logs',
-        ]);
+        try {
+            $this->copyDirectory(ROOT, $backup, [
+                '.git', 'logs', 'tmp', 'config/app_local.php',
+                'config/setup-token.txt', 'resources/wiki-media',
+            ]);
+            $this->copyDirectory($source, ROOT, [
+                '.git', 'config/app_local.php', 'config/setup-token.txt',
+                'resources/wiki-media', 'tmp', 'logs',
+            ]);
 
-        @unlink($download['archive']);
-        @unlink($download['checksum']);
-        $this->removeDirectory($extract);
+            if (is_file($appLocalBackup)) {
+                if (!copy($appLocalBackup, $appLocal)) {
+                    throw new RuntimeException('Cannot restore config/app_local.php after installing update files.');
+                }
+            }
 
-        return [
-            'success' => true,
-            'backup' => $backup,
-            'version' => (string)$release['version'],
-        ];
+            $migration = new Process(
+                [$this->phpCliBinary(), ROOT . DS . 'bin' . DS . 'cake.php', 'migrations', 'migrate', '--no-lock', '--quiet'],
+                ROOT,
+                null,
+                null,
+                300,
+            );
+            $migration->run();
+            if (!$migration->isSuccessful()) {
+                throw new RuntimeException(
+                    trim($migration->getErrorOutput() ?: $migration->getOutput()) ?: 'Cake migration command failed.',
+                );
+            }
+
+            if (is_file($appLocalBackup) && is_file($appLocal)) {
+                $restoredHash = hash_file('sha256', $appLocal);
+                if ($restoredHash !== $appLocalHash) {
+                    if (!copy($appLocalBackup, $appLocal)) {
+                        throw new RuntimeException('Cannot restore config/app_local.php after migrations.');
+                    }
+                }
+            }
+
+            @unlink($download['archive']);
+            @unlink($download['checksum']);
+            $this->removeDirectory($extract);
+
+            return [
+                'success' => true,
+                'backup' => $backup,
+                'version' => (string)$release['version'],
+                'migrations' => 'completed',
+                'app_local_restored' => is_file($appLocalBackup),
+            ];
+        } catch (\Throwable $exception) {
+            if (is_file($appLocalBackup)) {
+                @copy($appLocalBackup, $appLocal);
+            }
+            if ($sqliteBackup !== null && is_file($sqliteBackup)) {
+                $this->restoreSqliteDatabase($sqliteBackup);
+            }
+            try {
+                $this->copyDirectory($backup, ROOT, [
+                    '.git', 'logs', 'tmp', 'config/app_local.php',
+                    'config/setup-token.txt', 'resources/wiki-media',
+                ]);
+            } catch (\Throwable) {
+                // Preserve the original migration error below.
+            }
+            if (is_file($appLocalBackup)) {
+                @copy($appLocalBackup, $appLocal);
+            }
+            @unlink($download['archive']);
+            @unlink($download['checksum']);
+            $this->removeDirectory($extract);
+
+            throw new RuntimeException(
+                'Update or database migration failed; application files and local configuration were rolled back. '
+                . $exception->getMessage(),
+            );
+        }
     }
 
     /** @return int */
@@ -291,6 +367,24 @@ class ApplicationUpdater
         return preg_replace('/[^0-9.].*$/', '', ltrim(trim($version), 'v')) ?: '0';
     }
 
+    /** @return string */
+    private function phpCliBinary(): string
+    {
+        foreach ([getenv('PHP_CLI_BINARY') ?: null, '/usr/local/bin/php', '/usr/bin/php', 'php'] as $candidate) {
+            if (!is_string($candidate) || $candidate === '') {
+                continue;
+            }
+            $process = new Process([$candidate, '-r', 'echo PHP_SAPI;']);
+            $process->run();
+            if ($process->isSuccessful() && trim($process->getOutput()) === 'cli') {
+                return $candidate;
+            }
+        }
+        throw new RuntimeException(
+            'A PHP CLI binary is required to run database migrations automatically.',
+        );
+    }
+
     /** @param array<string> $excluded */
     private function copyDirectory(string $source, string $destination, array $excluded): void
     {
@@ -335,6 +429,43 @@ class ApplicationUpdater
         }
 
         return false;
+    }
+
+    /** @return string|null */
+    private function sqliteDatabaseBackup(string $backupDirectory): ?string
+    {
+        $config = ConnectionManager::getConfig('default');
+        $database = null;
+        if (is_string($config['database'] ?? null)) {
+            $database = $config['database'];
+        } elseif (is_string($config['url'] ?? null) && str_starts_with($config['url'], 'sqlite:///')) {
+            $database = substr($config['url'], 10);
+        }
+        if (!$database || !is_file($database)) {
+            return null;
+        }
+        $configClass = (string)($config['driver'] ?? '');
+        if ($configClass !== '' && !str_contains(strtolower($configClass), 'sqlite')) {
+            return null;
+        }
+        $destination = $backupDirectory . DS . 'database.sqlite';
+        if (!copy($database, $destination)) {
+            throw new RuntimeException('Cannot copy the SQLite database to the update backup.');
+        }
+
+        return $destination;
+    }
+
+    private function restoreSqliteDatabase(string $backup): void
+    {
+        $config = ConnectionManager::getConfig('default');
+        $database = is_string($config['database'] ?? null) ? $config['database'] : null;
+        if (!$database) {
+            return;
+        }
+        if (!copy($backup, $database)) {
+            throw new RuntimeException('Cannot restore the SQLite database backup.');
+        }
     }
 
     private function removeDirectory(string $directory): void
