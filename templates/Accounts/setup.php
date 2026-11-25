@@ -5,7 +5,7 @@
         <p>Use an empty database. Existing databases and configuration are never overwritten.</p>
         <p>Use HTTPS, keep the setup token private and protect the configuration directory from web access.</p>
         <p>After installation, sign in and request a verification email for the administrator address.</p>
-        <p><strong>Setup token file:</strong> <code>config/setup-token.txt</code> must contain exactly 64 lowercase hexadecimal characters and no extra text.</p>
+        <p><strong>Setup token file:</strong> <code>config/setup-token.txt</code> must contain exactly 64 lowercase letters or digits and no extra text.</p>
         <?php if (!empty($setupProblems)): ?>
             <h2>Server requirements</h2>
             <ul>

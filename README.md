@@ -28,9 +28,9 @@ local `config/app_local.php`, databases, secrets, or `node_modules`.
    by PHP, without making them publicly accessible or writable by other users.
    The installer reports missing requirements it can detect.
 3. Using the hosting file manager, create `config/setup-token.txt` containing
-   only a **unique, randomly generated 64-character lowercase hexadecimal
-   secret** (32 random bytes). A password manager capable of generating random
-   hexadecimal values can create one. Restrict its file permissions and never
+   only a **unique, randomly generated 64-character lowercase alphanumeric
+   secret**. A password manager or random string generator can create one.
+   Restrict its file permissions and never
    reuse or publish it. Do not copy the example test values from the code.
 4. Visit `/setup` over HTTPS. Enter the secret, public URL, database settings,
    SMTP settings and first administrator details. MySQL/MariaDB requires an

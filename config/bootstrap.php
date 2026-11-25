@@ -97,7 +97,7 @@ if (file_exists(CONFIG . 'app_local.php')) {
     Configure::load('app_local', 'default');
 } elseif (is_file(CONFIG . 'setup-token.txt') && !Configure::read('Security.salt')) {
     $setupToken = file_get_contents(CONFIG . 'setup-token.txt');
-    if (is_string($setupToken) && preg_match('/\A[a-f0-9]{64}\z/D', trim($setupToken))) {
+    if (is_string($setupToken) && preg_match('/\A[a-z0-9]{64}\z/D', trim($setupToken))) {
         Configure::write('Security.salt', hash('sha256', trim($setupToken) . 'wiki-setup'));
     }
     unset($setupToken);

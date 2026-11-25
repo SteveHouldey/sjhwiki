@@ -39,7 +39,7 @@ class WebInstaller
         }
         $token = trim($token);
 
-        return (bool)preg_match('/\A[a-f0-9]{64}\z/D', $token) && hash_equals($token, $value);
+        return (bool)preg_match('/\A[a-z0-9]{64}\z/D', $token) && hash_equals($token, $value);
     }
 
     /**
