@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
-use App\Service\WebInstaller;
 use Cake\Core\Configure;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\InternalErrorException;
@@ -38,8 +37,7 @@ class HostHeaderMiddleware implements MiddlewareInterface
 
         $fullBaseUrl = Configure::read('App.fullBaseUrl');
         if (!$fullBaseUrl) {
-            $installer = new WebInstaller(CONFIG, WWW_ROOT);
-            if ($installer->enabled()) {
+            if (!file_exists(CONFIG . 'app_local.php')) {
                 return $handler->handle($request);
             }
             throw new InternalErrorException(

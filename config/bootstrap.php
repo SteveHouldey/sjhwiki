@@ -104,6 +104,14 @@ if (file_exists(CONFIG . 'app_local.php')) {
 }
 
 /*
+ * Fresh setup is intentionally self-diagnosing. This mode ends automatically
+ * when app_local.php is written by the installer.
+ */
+if (!file_exists(CONFIG . 'app_local.php')) {
+    Configure::write('debug', true);
+}
+
+/*
  * When debug = true the metadata cache should only last for a short time.
  */
 if (Configure::read('debug')) {
