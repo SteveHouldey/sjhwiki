@@ -39,7 +39,7 @@ class HostHeaderMiddleware implements MiddlewareInterface
         $fullBaseUrl = Configure::read('App.fullBaseUrl');
         if (!$fullBaseUrl) {
             $installer = new WebInstaller(CONFIG, WWW_ROOT);
-            if ($installer->enabled() && str_ends_with(rtrim($request->getUri()->getPath(), '/'), '/setup')) {
+            if ($installer->enabled()) {
                 return $handler->handle($request);
             }
             throw new InternalErrorException(
