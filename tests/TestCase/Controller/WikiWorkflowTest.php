@@ -166,7 +166,7 @@ class WikiWorkflowTest extends TestCase
         $this->assertResponseOk();
         $this->assertResponseContains('A better home for everything you know');
         $this->assertResponseContains('Public-landing');
-        $this->assertResponseContains('SJHWiki v1.0.1 &copy; ' . gmdate('Y'));
+        $this->assertResponseContains('SJHWiki v1.0.1.1 &copy; ' . gmdate('Y'));
         $this->assertResponseContains('Created by Steven Houldey');
         $this->assertResponseNotContains('Private-landing');
         $this->assertResponseNotContains('class="sidebar"');

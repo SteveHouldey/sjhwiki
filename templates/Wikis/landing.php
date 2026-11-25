@@ -1,23 +1,29 @@
 <?php $this->assign('title', 'Welcome'); ?>
 <section class="landing-hero">
     <div class="landing-hero-content">
-        <p class="eyebrow">YOUR KNOWLEDGE, CONNECTED</p>
-        <h1>A better home for everything you know.</h1>
-        <p>Bring ideas, documentation and shared knowledge together in a wiki built for your team.</p>
+        <p class="eyebrow"><?= h(\Cake\Core\Configure::read('Landing.eyebrow', 'YOUR KNOWLEDGE, CONNECTED')) ?></p>
+        <h1><?= h(\Cake\Core\Configure::read('Landing.title', 'A better home for everything you know.')) ?></h1>
+        <p><?= h(\Cake\Core\Configure::read('Landing.message', 'Bring ideas, documentation and shared knowledge together in a wiki built for your team.')) ?></p>
         <div class="actions">
             <?php if (!$installed): ?>
                 <?= $this->Html->link('Set up your wiki', '/setup', ['class' => 'button']) ?>
             <?php else: ?>
-                <?= $this->Html->link('Sign in to your workspace', '/login', ['class' => 'button']) ?>
+                <?= $this->Html->link(
+                    \Cake\Core\Configure::read('Landing.primary.label', 'Sign in to your workspace'),
+                    \Cake\Core\Configure::read('Landing.primary.url', '/login'),
+                    ['class' => 'button'],
+                ) ?>
             <?php endif; ?>
-            <a class="button button-outline" href="#public-wikis">Explore public wikis</a>
+            <a class="button button-outline" href="<?= h(\Cake\Core\Configure::read('Landing.secondary.url', '#public-wikis')) ?>">
+                <?= h(\Cake\Core\Configure::read('Landing.secondary.label', 'Explore public wikis')) ?>
+            </a>
         </div>
     </div>
 </section>
 <section class="landing-features">
-    <div><h2>Write naturally</h2><p>Create rich pages with formatting, tables and images.</p></div>
-    <div><h2>Share securely</h2><p>Keep private knowledge protected with per-wiki permissions.</p></div>
-    <div><h2>Keep your history</h2><p>Review earlier versions and synchronize your work with Git.</p></div>
+    <div><h2><?= h(\Cake\Core\Configure::read('Features.one.title', 'Write naturally')) ?></h2><p><?= h(\Cake\Core\Configure::read('Features.one.message', 'Create rich pages with formatting, tables and images.')) ?></p></div>
+    <div><h2><?= h(\Cake\Core\Configure::read('Features.two.title', 'Share securely')) ?></h2><p><?= h(\Cake\Core\Configure::read('Features.two.message', 'Keep private knowledge protected with per-wiki permissions.')) ?></p></div>
+    <div><h2><?= h(\Cake\Core\Configure::read('Features.three.title', 'Keep your history')) ?></h2><p><?= h(\Cake\Core\Configure::read('Features.three.message', 'Review earlier versions and synchronize your work with Git.')) ?></p></div>
 </section>
 <section id="public-wikis">
     <div class="section-heading"><div><p class="eyebrow">DISCOVER</p><h2>Public wikis</h2></div></div>

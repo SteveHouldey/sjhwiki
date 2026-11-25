@@ -11,8 +11,8 @@ import Superscript from '@tiptap/extension-superscript';
 import { FooterRow, mergeWithinSection, prepareTableContent, serializeTableContent, toggleFooter } from './table.js';
 
 const container = document.querySelector('#visual-editor');
-const form = document.querySelector('#wiki-page-form');
-const textarea = form?.querySelector('textarea[name="body"]');
+const form = document.querySelector('#wiki-page-form, #admin-settings-form');
+const textarea = form?.querySelector('textarea[name="body"], textarea[name="about_content"]');
 
 if (container && form && textarea) {
   const status = container.querySelector('#editor-status');

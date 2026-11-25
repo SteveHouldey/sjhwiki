@@ -31,6 +31,23 @@ small { color: var(--muted); }
 .header-button { padding: .5rem .75rem; border: 1px solid #ffffff8c; border-radius: 4px; background: transparent; color: white; font: inherit; cursor: pointer; }
 .header-button:hover { color: white; background: #ffffff18; text-decoration: none; }
 .inline-form { display: inline; margin: 0; }
+.menu-toggle { display: none; width: 42px; height: 42px; padding: 9px; border: 1px solid #ffffff8c; border-radius: 5px; background: transparent; }
+.menu-toggle span { display: block; height: 2px; margin: 4px 0; border-radius: 2px; background: white; }
+.account-menu { position: relative; }
+.account-menu summary { display: flex; align-items: center; gap: 7px; min-height: 38px; padding: 7px 10px; border: 1px solid #ffffff70; border-radius: 5px; color: white; cursor: pointer; list-style: none; font-weight: 650; }
+.account-menu summary::-webkit-details-marker { display: none; }
+.account-menu-panel { position: absolute; right: 0; top: calc(100% + 8px); min-width: 210px; padding: 8px; border: 1px solid var(--border); border-radius: 7px; background: white; box-shadow: 0 12px 30px #17324a35; }
+.account-menu-user { display: block; padding: 8px 10px 10px; color: var(--muted); border-bottom: 1px solid var(--border); font-size: .82rem; }
+.account-menu-link, .account-menu-signout { display: block; width: 100%; margin: 4px 0 0; padding: 9px 10px; border: 0; border-radius: 4px; background: transparent; color: var(--text); text-align: left; }
+.account-menu-link:hover, .account-menu-signout:hover { background: #edf5fd; color: var(--blue); text-decoration: none; }
+.admin-settings-tabs { display: flex; margin-bottom: 18px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.admin-settings-tabs .nav-item { flex: 0 0 auto; }
+.admin-settings-tabs .nav-link { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: transparent; color: var(--muted); }
+.admin-settings-tabs .nav-link.active { border-bottom-color: var(--blue); color: var(--blue); background: transparent; }
+.tab-pane.active { display: block; }
+.tab-pane[hidden] { display: none; }
+.admin-settings-save { margin: 18px 0; }
+.admin-test-email:not([hidden]) { margin-top: 18px; }
 .app-shell { display: flex; flex: 1; min-width: 0; }
 .error-content { flex: 1; }
 .site-footer { padding: 20px clamp(20px, 4vw, 58px); border-top: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: .85rem; }
@@ -172,11 +189,17 @@ th { color: var(--muted); font-size: .78rem; }
 }
 @media (max-width: 760px) {
     .app-header { gap: 12px; padding: 0 16px; }
+    .menu-toggle { display: block; flex: 0 0 42px; }
     .brand { min-width: auto; }
-    .header-search { flex: 1; width: auto; }
-    .account-name { display: none; }
+    .header-search { display: none; }
+    .header-account { gap: 8px; }
+    .header-account > .header-button { display: none; }
+    .account-menu summary { min-height: 36px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .account-menu-panel { position: fixed; right: 12px; top: 58px; }
     .app-shell { display: block; }
-    .sidebar { display: flex; flex-wrap: wrap; gap: 2px; padding: 8px 12px; border-right: 0; border-bottom: 1px solid var(--border); }
+    .sidebar { display: none; flex-direction: column; flex-basis: auto; width: 100%; padding: 10px 12px 16px; border-right: 0; border-bottom: 1px solid var(--border); }
+    body.navigation-open .sidebar { display: flex; }
+    body.navigation-open .menu-toggle { background: #ffffff18; }
     .sidebar .nav-label { display: none; }
     .sidebar a { padding: 8px; font-size: .87rem; }
     .main-content { padding: 26px 16px; }

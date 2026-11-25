@@ -19,6 +19,24 @@ class ApplicationSettings
         'footer_text' => 'Created by Steven Houldey',
         'registration_enabled' => '1',
         'require_verified_email' => '1',
+        'landing_eyebrow' => 'YOUR KNOWLEDGE, CONNECTED',
+        'landing_title' => 'A better home for everything you know.',
+        'landing_message' => 'Bring ideas, documentation and shared knowledge together in a wiki built for your team.',
+        'landing_primary_label' => 'Sign in to your workspace',
+        'landing_primary_url' => '/login',
+        'landing_secondary_label' => 'Explore public wikis',
+        'landing_secondary_url' => '#public-wikis',
+        'feature_one_title' => 'Write naturally',
+        'feature_one_message' => 'Create rich pages with formatting, tables and images.',
+        'feature_two_title' => 'Share securely',
+        'feature_two_message' => 'Keep private knowledge protected with per-wiki permissions.',
+        'feature_three_title' => 'Keep your history',
+        'feature_three_message' => 'Review earlier versions and synchronize your work with Git.',
+        'about_eyebrow' => 'ABOUT THIS WIKI',
+        'about_title' => 'Knowledge is better when it is shared.',
+        'about_message' => 'Bring documentation, ideas and practical guides together in one accessible place.',
+        'about_content' => '<p>Write about this wiki, its purpose, policies and community using the Admin Center editor.</p>',
+        'test_email_address' => '',
     ];
 
     /** @param \Cake\Database\Connection $db */
@@ -95,8 +113,39 @@ class ApplicationSettings
         }
         Configure::write('Wiki.registrationEnabled', $values['registration_enabled'] === '1');
         Configure::write('Wiki.requireVerifiedEmail', $values['require_verified_email'] === '1');
+        foreach ([
+            'landing_eyebrow', 'landing_title', 'landing_message',
+            'landing_primary_label', 'landing_primary_url',
+            'landing_secondary_label', 'landing_secondary_url',
+            'feature_one_title', 'feature_one_message',
+            'feature_two_title', 'feature_two_message',
+            'feature_three_title', 'feature_three_message',
+            'about_eyebrow', 'about_title', 'about_message', 'about_content',
+        ] as $key) {
+            $prefix = explode('_', $key)[0];
+            $configuredKey = match ($prefix) {
+                'landing' => 'Landing.' . str_replace(
+                    ['primary_label', 'primary_url', 'secondary_label', 'secondary_url'],
+                    ['primary.label', 'primary.url', 'secondary.label', 'secondary.url'],
+                    substr($key, 8),
+                ),
+                'feature' => 'Features.' . str_replace([
+                    'feature_one_', 'feature_two_', 'feature_three_',
+                ], [
+                    'one.', 'two.', 'three.',
+                ], $key),
+                'about' => 'About.' . substr($key, 6),
+                default => 'App.' . $key,
+            };
+            Configure::write($configuredKey, $values[$key]);
+        }
 
         if (($values['smtp_host'] ?? '') !== '') {
+            $configuredTransport = in_array('default', TransportFactory::configured(), true)
+                ? TransportFactory::getConfig('default')
+                : null;
+            $testTransport = is_array($configuredTransport)
+                && str_contains((string)($configuredTransport['className'] ?? ''), 'TestEmailTransport');
             $transport = [
                 'className' => SmtpTransport::class,
                 'host' => ($values['smtp_encryption'] ?? '') === 'ssl'
@@ -108,15 +157,21 @@ class ApplicationSettings
                 'password' => ($values['smtp_password'] ?? '') === '' ? null : $values['smtp_password'],
                 'url' => null,
             ];
-            TransportFactory::drop('default');
-            TransportFactory::setConfig('default', $transport);
+            if (!$testTransport) {
+                TransportFactory::drop('default');
+                TransportFactory::setConfig('default', $transport);
+            }
             Mailer::drop('default');
             Mailer::setConfig('default', [
                 'from' => $values['mail_from'] ?? Configure::read('Email.default.from'),
+                'transport' => 'default',
             ]);
         } elseif (($values['mail_from'] ?? '') !== '') {
             Mailer::drop('default');
-            Mailer::setConfig('default', ['from' => $values['mail_from']]);
+            Mailer::setConfig('default', [
+                'from' => $values['mail_from'],
+                'transport' => 'default',
+            ]);
         }
     }
 

@@ -24,6 +24,7 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/admin/users/{id}', ['controller' => 'Users', 'action' => 'edit'])
             ->setPatterns(['id' => '\d+'])->setPass(['id']);
         $builder->connect('/admin/settings', ['controller' => 'AdminSettings', 'action' => 'index']);
+        $builder->connect('/admin/settings/test-email', ['controller' => 'AdminSettings', 'action' => 'testEmail']);
         $builder->connect('/admin/updates', ['controller' => 'AdminUpdates', 'action' => 'index']);
         $builder->connect('/admin/updates/apply', ['controller' => 'AdminUpdates', 'action' => 'apply']);
         $builder->connect('/wikis/add', ['controller' => 'Wikis', 'action' => 'add']);

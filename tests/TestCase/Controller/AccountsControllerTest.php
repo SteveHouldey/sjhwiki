@@ -6,11 +6,13 @@ namespace App\Test\TestCase\Controller;
 use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\Datasource\ConnectionManager;
 use Cake\TestSuite\IntegrationTestTrait;
+use Cake\TestSuite\EmailTrait;
 use Cake\TestSuite\TestCase;
 
 class AccountsControllerTest extends TestCase
 {
     use IntegrationTestTrait;
+    use EmailTrait;
 
     protected function setUp(): void
     {
@@ -54,6 +56,23 @@ class AccountsControllerTest extends TestCase
             'smtp_encryption' => 'tls',
             'smtp_username' => '',
             'smtp_password' => '',
+            'landing_eyebrow' => 'YOUR KNOWLEDGE',
+            'landing_title' => 'Welcome to Acme',
+            'landing_message' => 'Find and share documentation.',
+            'landing_primary_label' => 'Sign in',
+            'landing_primary_url' => '/login',
+            'landing_secondary_label' => 'Browse',
+            'landing_secondary_url' => '#public-wikis',
+            'feature_one_title' => 'Write naturally',
+            'feature_one_message' => 'Create rich pages.',
+            'feature_two_title' => 'Share securely',
+            'feature_two_message' => 'Control wiki access.',
+            'feature_three_title' => 'Keep history',
+            'feature_three_message' => 'Review revisions.',
+            'about_eyebrow' => 'ABOUT ACME',
+            'about_title' => 'Knowledge shared',
+            'about_message' => 'Documentation for everyone.',
+            'about_content' => '<p>Welcome to Acme documentation.</p>',
         ]);
         $this->assertRedirect('/admin/settings');
 
@@ -65,6 +84,12 @@ class AccountsControllerTest extends TestCase
             'SELECT setting_value FROM application_settings WHERE setting_key = ?',
             ['site_name'],
         )->fetchColumn(0));
+
+        $this->post('/admin/settings/test-email', [
+            'test_email_address' => 'test@example.test',
+        ]);
+        $this->assertRedirect('/admin/settings');
+        $this->assertMailSentTo('test@example.test');
     }
 
     public function testSetupRequiresTokenAndCannotBeRepeated(): void
