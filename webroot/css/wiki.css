@@ -114,8 +114,14 @@ th { color: var(--muted); font-size: .78rem; }
 .wiki-tree .wiki-tree { margin-left: 8px; padding-left: 15px; border-left: 1px solid var(--border); }
 .wiki-tree li { margin: 5px 0; overflow-wrap: anywhere; }
 .wiki-tree a, .tree-folder { display: inline-block; padding: 4px 2px; }
+.wiki-tree-branch { display: block; }
+.wiki-tree-branch summary { cursor: pointer; list-style: none; }
+.wiki-tree-branch summary::-webkit-details-marker { display: none; }
+.wiki-tree-branch summary::before { content: "\25B8"; margin-right: 8px; color: #99aec2; transition: transform .12s ease; }
+.wiki-tree-branch[open] > summary::before { content: "\25BE"; }
+.wiki-tree-branch summary:focus-visible { outline: 2px solid #b5d8fa; outline-offset: 2px; border-radius: 3px; }
+.wiki-tree-branch summary a { display: inline; padding: 4px 0; }
 .tree-folder { color: #64788b; font-weight: 650; }
-.tree-folder::before { content: "\25B8"; margin-right: 8px; color: #99aec2; }
 .wiki-layout { display: grid; grid-template-columns: minmax(180px, 235px) minmax(0, 1fr); gap: 20px; align-items: start; }
 .page-navigation { padding: 20px; }
 .page-navigation h2 { font-size: .95rem; }

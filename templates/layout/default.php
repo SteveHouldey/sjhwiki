@@ -48,6 +48,7 @@
                 <?= $this->Html->link('<span aria-hidden="true">@</span> Users', '/admin/users', ['escape' => false]) ?>
                 <?= $this->Html->link('<span aria-hidden="true">&lt;&gt;</span> Git sync', '/admin/sync', ['escape' => false]) ?>
                 <?= $this->Html->link('<span aria-hidden="true">&#9881;</span> Admin center', '/admin/settings', ['escape' => false]) ?>
+                <?= $this->Html->link('<span aria-hidden="true">&#8635;</span> Updates', '/admin/updates', ['escape' => false]) ?>
             <?php endif; ?>
         </nav>
         <?php endif; ?>
