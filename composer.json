@@ -13,7 +13,7 @@
         "ezyang/htmlpurifier": "^4.19",
         "league/commonmark": "^2.7",
         "mobiledetect/mobiledetectlib": "^4.8.03",
-        "symfony/process": "^7.0"
+        "symfony/process": "^8.1"
     },
     "require-dev": {
         "cakephp/bake": "^3.6",
