@@ -1,11 +1,19 @@
 # Changelog
 
+## 1.0.1.2
+
+- Added AJAX update progress modal with live status and percentage.
+- Added dismissible update status notifications.
+- Improved update available, up-to-date, and update failure messaging.
+
 ## 1.0.1.1
 
 - Added editable landing-page banner text and feature cards.
 - Added an Admin Center rich-text editor for the About page.
 - Added a compact mobile hamburger menu.
 - Added a responsive account dropdown menu.
+- Added a tabbed Admin Center with email test delivery.
+- Added AJAX update progress modal and dismissible update notifications.
 
 ## 1.0.1
 

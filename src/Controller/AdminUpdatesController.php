@@ -45,10 +45,37 @@ class AdminUpdatesController extends AppController
                 'Update package installed. Run database migrations once on the next deployment/CLI request.',
             );
             $this->set('updateResult', $result);
+            if ($this->isAjaxUpdateRequest()) {
+                return $this->response
+                    ->withStatus(200)
+                    ->withType('application/json')
+                    ->withStringBody(json_encode([
+                        'success' => true,
+                        'message' => 'Update package installed. Run database migrations to finish the upgrade.',
+                        'version' => (string)$release['version'],
+                        'backup' => (string)$result['backup'],
+                    ], JSON_THROW_ON_ERROR));
+            }
         } catch (RuntimeException $exception) {
             $this->Flash->error('Update failed: ' . $exception->getMessage());
+            if ($this->isAjaxUpdateRequest()) {
+                return $this->response
+                    ->withStatus(422)
+                    ->withType('application/json')
+                    ->withStringBody(json_encode([
+                        'success' => false,
+                        'message' => 'Update failed: ' . $exception->getMessage(),
+                    ], JSON_THROW_ON_ERROR));
+            }
         }
 
         return $this->redirect('/admin/updates');
+    }
+
+    /** @return bool */
+    private function isAjaxUpdateRequest(): bool
+    {
+        return $this->request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest' ||
+            str_contains($this->request->getHeaderLine('Accept'), 'application/json');
     }
 }

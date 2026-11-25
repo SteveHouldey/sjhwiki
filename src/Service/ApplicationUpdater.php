@@ -8,7 +8,7 @@ use ZipArchive;
 
 class ApplicationUpdater
 {
-    public const VERSION = '1.0.1.1';
+    public const VERSION = '1.0.1.2';
     public const REPOSITORY = 'SteveHouldey/sjhwiki';
 
     /** @return array<string,mixed>|null */
