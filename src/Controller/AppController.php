@@ -52,7 +52,9 @@ class AppController extends Controller
 
         $this->loadComponent('Flash');
         $this->loadComponent('Authentication.Authentication', ['requireIdentity' => false]);
-        (new ApplicationSettings($this->db()))->applyRuntime();
+        if (file_exists(CONFIG . 'app_local.php')) {
+            (new ApplicationSettings($this->db()))->applyRuntime();
+        }
 
         /*
          * Enable the following component for recommended CakePHP form protection settings.

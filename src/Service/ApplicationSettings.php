@@ -30,6 +30,9 @@ class ApplicationSettings
     public function all(): array
     {
         $values = self::DEFAULTS;
+        if (!file_exists(CONFIG . 'app_local.php')) {
+            return $values;
+        }
         if (!in_array('application_settings', $this->db->getSchemaCollection()->listTables(), true)) {
             return $values;
         }
