@@ -138,7 +138,15 @@ class AccountsController extends AppController
             return null;
         }
         if (!$installer->authorize($this->request->getData('token'))) {
-            $this->Flash->error('Invalid setup token.');
+            $tokenFile = CONFIG . 'setup-token.txt';
+            $token = is_file($tokenFile) ? trim((string)file_get_contents($tokenFile)) : '';
+            if (!preg_match('/\A[a-f0-9]{64}\z/D', $token)) {
+                $this->Flash->error(
+                    'Invalid setup token file. Replace config/setup-token.txt with exactly 64 lowercase hexadecimal characters.',
+                );
+            } else {
+                $this->Flash->error('Invalid setup token.');
+            }
 
             return null;
         }
